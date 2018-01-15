@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"strings"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -11,6 +13,7 @@ type Route struct {
 	Description string
 	Method      string
 	Path        string
+	QueryPairs  string
 	HandlerFunc http.HandlerFunc
 }
 
@@ -27,11 +30,21 @@ func NewRouter() *mux.Router {
 		handler = loggerHandler(handler, route.Description)
 		handler = handlers.CompressHandler(handler)
 
-		router.
-			Methods(route.Method).
-			Path(route.Path).
-			Name(route.Description).
-			Handler(handler)
+		if route.QueryPairs == "" {
+			router.
+				Methods(route.Method).
+				Path(route.Path).
+				Name(route.Description).
+				Handler(handler)
+		} else {
+			qp := strings.Split(route.QueryPairs, ",")
+			router.
+				Methods(route.Method).
+				Path(route.Path).
+				Name(route.Description).
+				Handler(handler).
+				Queries(qp...)
+		}
 	}
 
 	return router
@@ -39,9 +52,15 @@ func NewRouter() *mux.Router {
 
 var routes = Routes{
 	Route{
-		Description: "Health check",
-		Method: "GET",
-		Path: "/",
-		HandlerFunc: Heartbit,
+		Description: "Returns a simple response to check if server is alive",
+		Method:      "GET",
+		Path:        "/",
+		HandlerFunc: Index,
+	},
+	Route{
+		Description: "Sets string key and value",
+		Method:      "POST",
+		Path:        "/str",
+		HandlerFunc: SetKey,
 	},
 }
