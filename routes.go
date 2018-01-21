@@ -21,10 +21,10 @@ type Route struct {
 type Routes []Route
 
 // NewRouter creates a new router
-func NewRouter() *mux.Router {
+func NewRouter(cr *CustomRedis) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	for _, route := range routes {
+	for _, route := range allRoutes(cr) {
 		var handler http.Handler
 		handler = route.HandlerFunc
 		handler = loggerHandler(handler, route.Description)
@@ -50,17 +50,25 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-var routes = Routes{
-	Route{
-		Description: "Returns a simple response to check if server is alive",
-		Method:      "GET",
-		Path:        "/",
-		HandlerFunc: Index,
-	},
-	Route{
-		Description: "Sets string key and value",
-		Method:      "POST",
-		Path:        "/str",
-		HandlerFunc: SetKey,
-	},
+func allRoutes(cr *CustomRedis) []Route {
+	return []Route{
+		{
+			Description: "Returns a simple response to check if server is alive",
+			Method:      "GET",
+			Path:        "/",
+			HandlerFunc: Index,
+		},
+		Route{
+			Description: "Set string key and value",
+			Method:      "POST",
+			Path:        "/str",
+			HandlerFunc: cr.SetStr,
+		},
+		Route{
+			Description: "Get value by key",
+			Method:      "GET",
+			Path:        "/str",
+			QueryPairs:  "key,{key}",
+			HandlerFunc: cr.GetStr,
+		}}
 }

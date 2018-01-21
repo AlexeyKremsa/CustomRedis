@@ -2,3 +2,5 @@
 debug
 
 CustomRedis
+
+\.vscode/launch\.json
