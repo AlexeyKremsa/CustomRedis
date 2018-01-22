@@ -6,6 +6,16 @@ import (
 	"net/http"
 )
 
+type responseJSON struct {
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+// WriteResponseData sends a response with status and data
+func WriteResponseData(w http.ResponseWriter, r *http.Request, status int, data interface{}) {
+	WriteResponseMessageWithData(w, r, status, "", data)
+}
+
 // WriteResponseMessage sends a response with status and message
 func WriteResponseMessage(w http.ResponseWriter, r *http.Request, status int, message string) {
 	WriteResponseMessageWithData(w, r, status, message, nil)
@@ -13,10 +23,7 @@ func WriteResponseMessage(w http.ResponseWriter, r *http.Request, status int, me
 
 // WriteResponseMessageWithData sends a response with status, message and data
 func WriteResponseMessageWithData(w http.ResponseWriter, r *http.Request, status int, message string, data interface{}) {
-	type responseJSON struct {
-		Message string      `json:"message,omitempty"`
-		Data    interface{} `json:"data,omitempty"`
-	}
+
 	response := responseJSON{
 		Message: message,
 		Data:    data,

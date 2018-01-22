@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/AlexeyKremsa/CustomRedis/storage"
 	"github.com/gorilla/mux"
 )
 
@@ -37,6 +38,29 @@ func (cr *CustomRedis) SetStr(w http.ResponseWriter, r *http.Request) {
 	WriteResponseEmpty(w, r, http.StatusCreated)
 }
 
+func (cr *CustomRedis) SetStrNX(w http.ResponseWriter, r *http.Request) {
+	var kv KeyValue
+	err := json.NewDecoder(r.Body).Decode(&kv)
+	if err != nil {
+		WriteResponseMessage(w, r, http.StatusInternalServerError, err.Error())
+	}
+
+	if kv.Key == "" {
+		WriteResponseMessage(w, r, http.StatusBadRequest, errEmptyKey)
+	}
+
+	if kv.Value == "" {
+		WriteResponseMessage(w, r, http.StatusBadRequest, errEmptyValue)
+	}
+
+	err = cr.Storage.SetStrNX(kv.Key, kv.Value)
+	if err != nil {
+		HandleError(w, r, err)
+	}
+
+	WriteResponseEmpty(w, r, http.StatusCreated)
+}
+
 func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
 	if key == "" {
@@ -45,12 +69,24 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 
 	val, err := cr.Storage.GetStr(key)
 	if err != nil {
-		WriteResponseMessage(w, r, http.StatusInternalServerError, err.Error())
+		HandleError(w, r, err)
 	}
 
-	if val == "" {
+	if val == nil {
 		WriteResponseEmpty(w, r, http.StatusNoContent)
 	}
 
-	WriteResponseJSON(w, r, http.StatusOK, val)
+	WriteResponseData(w, r, http.StatusOK, val)
+}
+
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	switch err.(type) {
+	// business case error happened, return status 200 because request was handled properly
+	case storage.ErrBusiness:
+		WriteResponseMessage(w, r, http.StatusOK, err.Error())
+
+	// unexpected error happened
+	default:
+		WriteResponseMessage(w, r, http.StatusInternalServerError, err.Error())
+	}
 }

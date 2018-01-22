@@ -2,10 +2,6 @@ package storage
 
 import "errors"
 
-const (
-	errWrongType = "Operation against a key holding the wrong kind of value"
-)
-
 type Str struct {
 	Value string
 }
@@ -25,13 +21,24 @@ func (s *Storage) SetStr(key, value string) {
 	s.keyValues[key] = item
 }
 
-func (s *Storage) GetStr(key string) (string, error) {
+func (s *Storage) SetStrNX(key, value string) error {
+	if _, ok := s.keyValues[key]; ok {
+		return newErrCustom("Key already exists")
+	}
+
+	item := Str{Value: value}
+	s.keyValues[key] = item
+
+	return nil
+}
+
+func (s *Storage) GetStr(key string) (interface{}, error) {
 	if v, ok := s.keyValues[key]; ok {
 		if s, ok := v.(Str); ok {
 			return s.Value, nil
 		}
-		return "", errors.New(errWrongType)
+		return nil, errors.New(errWrongType)
 	}
 
-	return "", nil
+	return nil, nil
 }
