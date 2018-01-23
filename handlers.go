@@ -59,7 +59,7 @@ func (cr *CustomRedis) SetStrNX(w http.ResponseWriter, r *http.Request) {
 
 	err = cr.Storage.SetNX(kv.Key, kv.Value, kv.ExpirationSec)
 	if err != nil {
-		HandleError(w, r, err)
+		handleError(w, r, err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 
 	val, err := cr.Storage.Get(key)
 	if err != nil {
-		HandleError(w, r, err)
+		handleError(w, r, err)
 		return
 	}
 
@@ -89,13 +89,26 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	HandleError(w, r, errors.New(errWrongType))
+	handleError(w, r, errors.New(errWrongType))
 }
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+func (cr *CustomRedis) Delete(w http.ResponseWriter, r *http.Request) {
+	key := mux.Vars(r)["key"]
+	if key == "" {
+		WriteResponseMessage(w, r, http.StatusBadRequest, errEmptyKey)
+		return
+	}
+
+	cr.Storage.RemoveItem(key)
+
+	WriteResponseEmpty(w, r, http.StatusOK)
+}
+
+func handleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch err.(type) {
 	// business case error happened, return status 200 because request was handled properly
 	case storage.ErrBusiness:
+		log.Debug(err.Error())
 		WriteResponseMessage(w, r, http.StatusOK, err.Error())
 
 	// unexpected error happened

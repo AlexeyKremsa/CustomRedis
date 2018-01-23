@@ -29,12 +29,11 @@ func Init(cleanupTimeoutSec int64) *Storage {
 
 func (s *Storage) cleanup() {
 	log.Debugf("Cleanup started. Total items before cleanup: %d", len(s.keyValues))
-	now := time.Now().UnixNano()
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	for key, val := range s.keyValues {
-		if val.Expiration > 0 && now > val.Expiration {
+		if isExpired(val.Expiration) {
 			delete(s.keyValues, key)
 		}
 	}
@@ -95,11 +94,16 @@ func (s *Storage) Get(key string) (interface{}, error) {
 	return nil, nil
 }
 
+func (s *Storage) RemoveItem(key string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	delete(s.keyValues, key)
+}
+
 func isExpired(expiration int64) bool {
-	if expiration > 0 {
-		if time.Now().Unix() > expiration {
-			return true
-		}
+	if expiration > 0 && time.Now().Unix() > expiration {
+		return true
 	}
+
 	return false
 }
