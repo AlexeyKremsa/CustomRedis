@@ -1,8 +1,6 @@
 package storage
 
-const (
-	errWrongType = "Operation against a key holding the wrong kind of value"
-)
+const ()
 
 // ErrBusiness is a business case error
 type ErrBusiness struct {

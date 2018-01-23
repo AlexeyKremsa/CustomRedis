@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/AlexeyKremsa/CustomRedis/storage"
@@ -31,7 +32,7 @@ func (cr *CustomRedis) SetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cr.Storage.SetStr(kv.Key, kv.Value, kv.ExpirationSec)
+	cr.Storage.Set(kv.Key, kv.Value, kv.ExpirationSec)
 
 	WriteResponseEmpty(w, r, http.StatusCreated)
 	return
@@ -55,7 +56,7 @@ func (cr *CustomRedis) SetStrNX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cr.Storage.SetStrNX(kv.Key, kv.Value, kv.ExpirationSec)
+	err = cr.Storage.SetNX(kv.Key, kv.Value, kv.ExpirationSec)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -71,7 +72,7 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val, err := cr.Storage.GetStr(key)
+	val, err := cr.Storage.Get(key)
 	if err != nil {
 		HandleError(w, r, err)
 		return
@@ -82,7 +83,12 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteResponseData(w, r, http.StatusOK, val)
+	if str, ok := val.(string); ok {
+		WriteResponseData(w, r, http.StatusOK, str)
+		return
+	}
+
+	HandleError(w, r, errors.New(errWrongType))
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
