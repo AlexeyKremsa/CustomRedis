@@ -18,7 +18,7 @@ type CustomRedis struct {
 func main() {
 	cfg := config.LoadConfig()
 	setupLogger(cfg)
-	st := storage.Init()
+	st := storage.Init(cfg.CleanupTimeoutSec)
 
 	cr := &CustomRedis{
 		Storage: st,

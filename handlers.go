@@ -7,6 +7,7 @@ import (
 
 	"github.com/AlexeyKremsa/CustomRedis/storage"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 // Index returns a simple response to check if server is alive
@@ -99,6 +100,7 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 
 	// unexpected error happened
 	default:
+		log.Error(err.Error())
 		WriteResponseMessage(w, r, http.StatusInternalServerError, err.Error())
 	}
 }

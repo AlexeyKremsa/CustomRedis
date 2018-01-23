@@ -3,6 +3,8 @@ package storage
 import (
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Item struct {
@@ -16,10 +18,37 @@ type Storage struct {
 	keyValues map[string]Item
 }
 
-func Init() *Storage {
+func Init(cleanupTimeoutSec int64) *Storage {
 	strg := &Storage{}
 	strg.keyValues = make(map[string]Item)
+
+	go strg.runCleanup(cleanupTimeoutSec)
+
 	return strg
+}
+
+func (s *Storage) cleanup() {
+	log.Debugf("Cleanup started. Total items before cleanup: %d", len(s.keyValues))
+	now := time.Now().UnixNano()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	for key, val := range s.keyValues {
+		if val.Expiration > 0 && now > val.Expiration {
+			delete(s.keyValues, key)
+		}
+	}
+}
+
+func (s *Storage) runCleanup(timeoutSec int64) {
+	ticker := time.NewTicker(time.Second * time.Duration(timeoutSec))
+
+	for {
+		select {
+		case <-ticker.C:
+			s.cleanup()
+		}
+	}
 }
 
 func (s *Storage) Set(key string, value interface{}, expirationSec int64) {
