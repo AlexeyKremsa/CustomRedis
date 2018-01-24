@@ -50,3 +50,30 @@ func (cr *CustomRedis) GetMap(w http.ResponseWriter, r *http.Request) {
 
 	WriteResponseData(w, r, http.StatusOK, val)
 }
+
+func (cr *CustomRedis) GetMapItem(w http.ResponseWriter, r *http.Request) {
+	key := mux.Vars(r)["key"]
+	if key == "" {
+		WriteResponseMessage(w, r, http.StatusBadRequest, errEmptyKey)
+		return
+	}
+
+	itemKey := mux.Vars(r)["itemKey"]
+	if itemKey == "" {
+		WriteResponseMessage(w, r, http.StatusBadRequest, errEmptyMapItemKey)
+		return
+	}
+
+	val, err := cr.Storage.GetMapItem(key, itemKey)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	if val == "" {
+		WriteResponseEmpty(w, r, http.StatusNoContent)
+		return
+	}
+
+	WriteResponseData(w, r, http.StatusOK, val)
+}

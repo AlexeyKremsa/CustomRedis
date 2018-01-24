@@ -24,7 +24,7 @@ type Routes []Route
 func NewRouter(cr *CustomRedis) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	for _, route := range AllRoutes(cr) {
+	for _, route := range allRoutes(cr) {
 		var handler http.Handler
 		handler = route.HandlerFunc
 		handler = loggerHandler(handler, route.Description)
@@ -50,7 +50,7 @@ func NewRouter(cr *CustomRedis) *mux.Router {
 	return router
 }
 
-func AllRoutes(cr *CustomRedis) []Route {
+func allRoutes(cr *CustomRedis) []Route {
 	return []Route{
 		{
 			Description: "Returns a simple response to check if server is alive",
@@ -122,6 +122,13 @@ func AllRoutes(cr *CustomRedis) []Route {
 			Path:        "/map",
 			QueryPairs:  "key,{key}",
 			HandlerFunc: cr.GetMap,
+		},
+		Route{
+			Description: "Get map item by key",
+			Method:      "GET",
+			Path:        "/mapitem",
+			QueryPairs:  "key,{key},itemKey,{itemKey}",
+			HandlerFunc: cr.GetMapItem,
 		},
 		Route{
 			Description: "Delete value by key",

@@ -16,3 +16,20 @@ func (s *Storage) GetMap(key string) (map[string]string, error) {
 
 	return nil, newErrCustom(errWrongType)
 }
+
+func (s *Storage) GetMapItem(key, itemKey string) (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if item, ok := s.keyValues[key]; ok {
+		if isExpired(item.Expiration) {
+			return "", newErrCustom(errNotExist)
+		}
+
+		if m, ok := item.Value.(map[string]string); ok {
+			return m[itemKey], nil
+		}
+		return "", newErrCustom(errWrongType)
+	}
+	return "", newErrCustom(errNotExist)
+}
