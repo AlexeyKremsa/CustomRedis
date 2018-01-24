@@ -71,11 +71,24 @@ func AllRoutes(cr *CustomRedis) []Route {
 			HandlerFunc: cr.SetStrNX,
 		},
 		Route{
-			Description: "Get value by key",
+			Description: "Get string by key",
 			Method:      "GET",
 			Path:        "/str",
 			QueryPairs:  "key,{key}",
 			HandlerFunc: cr.GetStr,
+		},
+		Route{
+			Description: "Set list key and value",
+			Method:      "POST",
+			Path:        "/list",
+			HandlerFunc: cr.SetList,
+		},
+		Route{
+			Description: "Get list by key",
+			Method:      "GET",
+			Path:        "/list",
+			QueryPairs:  "key,{key}",
+			HandlerFunc: cr.GetList,
 		},
 		Route{
 			Description: "Delete value by key",
