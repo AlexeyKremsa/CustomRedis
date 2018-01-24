@@ -50,7 +50,7 @@ func (s *Storage) runCleanup(timeoutSec int64) {
 	}
 }
 
-func (s *Storage) Set(key string, value interface{}, expirationSec int64) {
+func (s *Storage) set(key string, value interface{}, expirationSec int64) {
 	var expTime int64
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
@@ -62,7 +62,7 @@ func (s *Storage) Set(key string, value interface{}, expirationSec int64) {
 	s.keyValues[key] = item
 }
 
-func (s *Storage) SetNX(key string, value interface{}, expirationSec int64) error {
+func (s *Storage) setNX(key string, value interface{}, expirationSec int64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -81,7 +81,7 @@ func (s *Storage) SetNX(key string, value interface{}, expirationSec int64) erro
 	return nil
 }
 
-func (s *Storage) Get(key string) (interface{}, error) {
+func (s *Storage) get(key string) (interface{}, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -105,64 +105,4 @@ func isExpired(expiration int64) bool {
 		return true
 	}
 	return false
-}
-
-func (s *Storage) ListPush(key string, items []string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	if item, ok := s.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
-			return newErrCustom(errNotExist)
-		}
-
-		if list, ok := item.Value.([]string); ok {
-			list = append(list, items...)
-			item.Value = list
-			s.keyValues[key] = item
-			return nil
-		}
-		return newErrCustom(errWrongType)
-	}
-	return newErrCustom(errNotExist)
-}
-
-func (s *Storage) ListPop(key string) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	if item, ok := s.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
-			return "", newErrCustom(errNotExist)
-		}
-
-		if list, ok := item.Value.([]string); ok {
-			lastElem := list[len(list)-1]
-			item.Value = list[:len(list)-1]
-			s.keyValues[key] = item
-			return lastElem, nil
-		}
-		return "", newErrCustom(errWrongType)
-	}
-	return "", newErrCustom(errNotExist)
-}
-
-func (s *Storage) ListIndex(key string, index int) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	if item, ok := s.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
-			return "", newErrCustom(errNotExist)
-		}
-
-		if list, ok := item.Value.([]string); ok {
-			if index >= len(list) || index < 0 {
-				return "", newErrCustom(errIndexOutOfRange)
-			}
-			return list[index], nil
-		}
-		return "", newErrCustom(errWrongType)
-	}
-	return "", newErrCustom(errNotExist)
 }

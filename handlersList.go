@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -29,7 +28,7 @@ func (cr *CustomRedis) SetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cr.Storage.Set(req.Key, req.Value, req.ExpirationSec)
+	cr.Storage.SetList(req.Key, req.Value, req.ExpirationSec)
 
 	WriteResponseEmpty(w, r, http.StatusCreated)
 }
@@ -68,23 +67,18 @@ func (cr *CustomRedis) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val, err := cr.Storage.Get(key)
+	val, err := cr.Storage.GetList(key)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
 
-	if val == nil {
+	if len(val) == 0 {
 		WriteResponseEmpty(w, r, http.StatusNoContent)
 		return
 	}
 
-	if str, ok := val.([]string); ok {
-		WriteResponseData(w, r, http.StatusOK, str)
-		return
-	}
-
-	handleError(w, r, errors.New(errWrongType))
+	WriteResponseData(w, r, http.StatusOK, val)
 }
 
 func (cr *CustomRedis) ListPop(w http.ResponseWriter, r *http.Request) {

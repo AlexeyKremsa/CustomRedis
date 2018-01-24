@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,7 +25,7 @@ func (cr *CustomRedis) SetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cr.Storage.Set(req.Key, req.Value, req.ExpirationSec)
+	cr.Storage.SetStr(req.Key, req.Value, req.ExpirationSec)
 
 	WriteResponseEmpty(w, r, http.StatusCreated)
 }
@@ -49,7 +48,7 @@ func (cr *CustomRedis) SetStrNX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cr.Storage.SetNX(req.Key, req.Value, req.ExpirationSec)
+	err = cr.Storage.SetStrNX(req.Key, req.Value, req.ExpirationSec)
 	if err != nil {
 		handleError(w, r, err)
 		return
@@ -65,21 +64,16 @@ func (cr *CustomRedis) GetStr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val, err := cr.Storage.Get(key)
+	val, err := cr.Storage.GetStr(key)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
 
-	if val == nil {
+	if val == "" {
 		WriteResponseEmpty(w, r, http.StatusNoContent)
 		return
 	}
 
-	if str, ok := val.(string); ok {
-		WriteResponseData(w, r, http.StatusOK, str)
-		return
-	}
-
-	handleError(w, r, errors.New(errWrongType))
+	WriteResponseData(w, r, http.StatusOK, val)
 }
