@@ -2,11 +2,13 @@ package main
 
 import (
 	"net/http"
-	"time"
-	log "github.com/sirupsen/logrus"
 	"os"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/AlexeyKremsa/CustomRedis/config"
+	"github.com/AlexeyKremsa/CustomRedis/storage"
 )
 
 // loggerHandler Log all HTTP requests to output in a proper format.
@@ -30,4 +32,18 @@ func setupLogger(config *config.CRConfig) {
 		log.Fatalf("Failed to parse log level. %v", err)
 	}
 	log.SetLevel(lvl)
+}
+
+func handleError(w http.ResponseWriter, r *http.Request, err error) {
+	switch err.(type) {
+	// business case error happened, return status 200 because request was handled properly
+	case storage.ErrBusiness:
+		log.Debug(err.Error())
+		WriteResponseMessage(w, r, http.StatusOK, err.Error())
+
+	// unexpected error happened
+	default:
+		log.Error(err.Error())
+		WriteResponseMessage(w, r, http.StatusInternalServerError, err.Error())
+	}
 }
