@@ -3,8 +3,6 @@ package storage
 import (
 	"sync"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Item struct {
@@ -13,14 +11,23 @@ type Item struct {
 }
 
 type Storage struct {
+	// pre-calculated value which is used to determine a shard
+	shardCountDecremented uint64
+	shards                []*shard
+}
+
+type shard struct {
 	mutex sync.RWMutex
 	// Also sync.Map could be considered for systems with heavy read operations and big amount of CPU cores
 	keyValues map[string]Item
 }
 
-func Init(cleanupTimeoutSec int64) *Storage {
-	strg := &Storage{}
-	strg.keyValues = make(map[string]Item)
+func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
+	strg := &Storage{shardCountDecremented: shardCount - 1}
+	strg.shards = make([]*shard, shardCount)
+	for i := 0; i < int(shardCount); i++ {
+		strg.shards[i] = &shard{keyValues: make(map[string]Item)}
+	}
 
 	go strg.runCleanup(cleanupTimeoutSec)
 
@@ -28,18 +35,21 @@ func Init(cleanupTimeoutSec int64) *Storage {
 }
 
 func (s *Storage) cleanup() {
-	log.Debugf("Cleanup started. Total items before cleanup: %d", len(s.keyValues))
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	//TODO: pick up random shard to clean up
 
-	for key, val := range s.keyValues {
-		if isExpired(val.Expiration) {
-			delete(s.keyValues, key)
-		}
-	}
+	// shard :=
+	// 	log.Debugf("Cleanup started. Total items before cleanup: %d", len(s.keyValues))
+	// s.getShard(key).mutex.Lock()
+	// defer s.getShard(key).mutex.Unlock()
+
+	// for key, val := range s.keyValues {
+	// 	if isExpired(val.Expiration) {
+	// 		delete(s.keyValues, key)
+	// 	}
+	// }
 }
 
-func (s *Storage) runCleanup(timeoutSec int64) {
+func (s *Storage) runCleanup(timeoutSec uint64) {
 	ticker := time.NewTicker(time.Second * time.Duration(timeoutSec))
 
 	for {
@@ -51,22 +61,26 @@ func (s *Storage) runCleanup(timeoutSec int64) {
 }
 
 func (s *Storage) set(key string, value interface{}, expirationSec int64) {
+	shard := s.getShard(key)
+
 	var expTime int64
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
 	}
 	item := Item{Value: value, Expiration: expTime}
 
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.keyValues[key] = item
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
+	shard.keyValues[key] = item
 }
 
 func (s *Storage) setNX(key string, value interface{}, expirationSec int64) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	shard := s.getShard(key)
 
-	if _, ok := s.keyValues[key]; ok {
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
+
+	if _, ok := shard.keyValues[key]; ok {
 		return newErrCustom("Key already exists")
 	}
 
@@ -76,16 +90,18 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec int64) erro
 	}
 	item := Item{Value: value, Expiration: expTime}
 
-	s.keyValues[key] = item
+	shard.keyValues[key] = item
 
 	return nil
 }
 
 func (s *Storage) get(key string) (interface{}, error) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+	shard := s.getShard(key)
 
-	if item, ok := s.keyValues[key]; ok {
+	shard.mutex.RLock()
+	defer shard.mutex.RUnlock()
+
+	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
 			return nil, nil
 		}
@@ -95,9 +111,11 @@ func (s *Storage) get(key string) (interface{}, error) {
 }
 
 func (s *Storage) RemoveItem(key string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	delete(s.keyValues, key)
+	shard := s.getShard(key)
+
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
+	delete(shard.keyValues, key)
 }
 
 func isExpired(expiration int64) bool {

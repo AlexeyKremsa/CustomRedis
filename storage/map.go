@@ -18,10 +18,12 @@ func (s *Storage) GetMap(key string) (map[string]string, error) {
 }
 
 func (s *Storage) GetMapItem(key, itemKey string) (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	shard := s.getShard(key)
 
-	if item, ok := s.keyValues[key]; ok {
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
+
+	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
 			return "", newErrCustom(errNotExist)
 		}

@@ -9,7 +9,8 @@ import (
 type CRConfig struct {
 	Port              string `default:"8282"`
 	LogLevel          string `default:"debug"`
-	CleanupTimeoutSec int64  `default:"60"`
+	CleanupTimeoutSec int    `default:"60"`
+	ShardCount        int    `default:"1"`
 }
 
 // LoadConfig load configuration
