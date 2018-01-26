@@ -32,7 +32,11 @@ func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 		strg.shards[i] = &shard{keyValues: make(map[string]Item)}
 	}
 
-	go strg.runCleanup(cleanupTimeoutSec)
+	if cleanupTimeoutSec > 0 {
+		go strg.runCleanup(cleanupTimeoutSec)
+	} else {
+		log.Warn("cleanupTimeoutSec is set to 0! No cleanup will be performed!")
+	}
 
 	return strg
 }
@@ -86,7 +90,7 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec int64) erro
 	defer shard.mutex.Unlock()
 
 	if _, ok := shard.keyValues[key]; ok {
-		return newErrCustom("Key already exists")
+		return newErrCustom(errKeyExists)
 	}
 
 	var expTime int64
@@ -100,7 +104,7 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec int64) erro
 	return nil
 }
 
-func (s *Storage) get(key string) (interface{}, error) {
+func (s *Storage) get(key string) interface{} {
 	shard := s.getShard(key)
 
 	shard.mutex.RLock()
@@ -108,11 +112,11 @@ func (s *Storage) get(key string) (interface{}, error) {
 
 	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
-			return nil, nil
+			return nil
 		}
-		return item.Value, nil
+		return item.Value
 	}
-	return nil, nil
+	return nil
 }
 
 func (s *Storage) RemoveItem(key string) {

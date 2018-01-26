@@ -5,10 +5,7 @@ func (s *Storage) SetMap(key string, value map[string]string, expirationSec int6
 }
 
 func (s *Storage) GetMap(key string) (map[string]string, error) {
-	val, err := s.get(key)
-	if err != nil {
-		return nil, err
-	}
+	val := s.get(key)
 
 	if item, ok := val.(map[string]string); ok {
 		return item, nil

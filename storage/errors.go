@@ -4,6 +4,7 @@ const (
 	errWrongType       = "Operation against a key holding the wrong kind of value"
 	errNotExist        = "Requested item doesn`t exist"
 	errIndexOutOfRange = "Index is out of range"
+	errKeyExists       = "Key already exists"
 )
 
 // ErrBusiness is a business case error
