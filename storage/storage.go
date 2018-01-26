@@ -1,8 +1,11 @@
 package storage
 
 import (
+	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/labstack/gommon/log"
 )
 
 type Item struct {
@@ -35,18 +38,20 @@ func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 }
 
 func (s *Storage) cleanup() {
-	//TODO: pick up random shard to clean up
+	seed := rand.NewSource(time.Now().UnixNano())
+	rnd := rand.New(seed)
+	shardIndex := rnd.Intn(int(s.shardCountDecremented))
+	shard := s.shards[shardIndex]
+	log.Debugf("Cleanup started")
 
-	// shard :=
-	// 	log.Debugf("Cleanup started. Total items before cleanup: %d", len(s.keyValues))
-	// s.getShard(key).mutex.Lock()
-	// defer s.getShard(key).mutex.Unlock()
+	shard.mutex.Lock()
+	defer shard.mutex.Unlock()
 
-	// for key, val := range s.keyValues {
-	// 	if isExpired(val.Expiration) {
-	// 		delete(s.keyValues, key)
-	// 	}
-	// }
+	for key, val := range shard.keyValues {
+		if isExpired(val.Expiration) {
+			delete(shard.keyValues, key)
+		}
+	}
 }
 
 func (s *Storage) runCleanup(timeoutSec uint64) {
