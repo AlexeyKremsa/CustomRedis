@@ -17,8 +17,6 @@ import (
 // }
 
 func Test_SetStr(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := "str1"
 
@@ -34,9 +32,7 @@ func Test_SetStr(t *testing.T) {
 }
 
 func Test_SetStrNX(t *testing.T) {
-	strg := Init(0, 1)
-
-	key := "key1"
+	key := "keyNX"
 	valueToSet := "str1"
 
 	strg.SetStrNX(key, valueToSet, 0)
@@ -51,9 +47,6 @@ func Test_SetStrNX(t *testing.T) {
 }
 
 func Test_SetStrNX_GetKeyExistsError(t *testing.T) {
-	strg := Init(0, 1)
-
-	// set value beforehand
 	key := "key1"
 	valueToSet := "str1"
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -69,9 +62,6 @@ func Test_SetStrNX_GetKeyExistsError(t *testing.T) {
 }
 
 func Test_GetStr(t *testing.T) {
-	strg := Init(0, 1)
-
-	// set value beforehand
 	key := "key1"
 	valueToSet := "str1"
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -86,10 +76,18 @@ func Test_GetStr(t *testing.T) {
 	}
 }
 
-func Test_GetStr_GetErrWronType(t *testing.T) {
-	strg := Init(0, 1)
+func Test_GetStr_NotExists_ReturnEmptyString(t *testing.T) {
+	val, err := strg.GetStr("any")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
 
-	// set value beforehand
+	if val != "" {
+		t.Fatalf("Result expected to be empty, but got: %s", val)
+	}
+}
+
+func Test_GetStr_GetErrWronType(t *testing.T) {
 	key := "key1"
 	strg.shards[0].keyValues[key] = Item{Value: []string{"q", "w"}}
 

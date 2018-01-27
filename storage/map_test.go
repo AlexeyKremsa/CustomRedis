@@ -6,8 +6,6 @@ import (
 )
 
 func Test_SetMap(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := make(map[string]string)
 	valueToSet["k"] = "v"
@@ -24,8 +22,6 @@ func Test_SetMap(t *testing.T) {
 }
 
 func Test_GetMap(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := make(map[string]string)
 	valueToSet["k"] = "v"
@@ -42,8 +38,6 @@ func Test_GetMap(t *testing.T) {
 }
 
 func Test_GetMap_MapNotExists_ReturnNil(t *testing.T) {
-	strg := Init(0, 1)
-
 	res, err := strg.GetMap("any")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
@@ -55,8 +49,6 @@ func Test_GetMap_MapNotExists_ReturnNil(t *testing.T) {
 }
 
 func Test_GetMap_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := 2
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -80,8 +72,6 @@ func Test_GetMap_GetErrWrongType(t *testing.T) {
 }
 
 func Test_GetMapItem(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := make(map[string]string)
 	itemKey := "k"
@@ -100,8 +90,6 @@ func Test_GetMapItem(t *testing.T) {
 }
 
 func Test_GetMapItem_MapNotExists_ReturnNil(t *testing.T) {
-	strg := Init(0, 1)
-
 	res, err := strg.GetMapItem("any", "any2")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
@@ -113,8 +101,6 @@ func Test_GetMapItem_MapNotExists_ReturnNil(t *testing.T) {
 }
 
 func Test_GetMapItem_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := 2
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -138,8 +124,6 @@ func Test_GetMapItem_GetErrWrongType(t *testing.T) {
 }
 
 func Test_GetMapItem_KeyNotExists_ReturnEmptyString(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := make(map[string]string)
 	itemKey := "k"

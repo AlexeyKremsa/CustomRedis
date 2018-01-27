@@ -6,8 +6,6 @@ import (
 )
 
 func Test_SetList(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := []string{"str1"}
 
@@ -23,8 +21,6 @@ func Test_SetList(t *testing.T) {
 }
 
 func Test_GetList(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := []string{"str1", "str2"}
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -40,8 +36,6 @@ func Test_GetList(t *testing.T) {
 }
 
 func Test_GetList_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := 2
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -61,8 +55,6 @@ func Test_GetList_GetErrWrongType(t *testing.T) {
 }
 
 func Test_GetList_ListNotExists_ReturnNil(t *testing.T) {
-	strg := Init(0, 1)
-
 	res, err := strg.GetList("any")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
@@ -74,8 +66,6 @@ func Test_GetList_ListNotExists_ReturnNil(t *testing.T) {
 }
 
 func Test_ListInsert(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToAdd := []string{"str2"}
 	initialArr := []string{"str1"}
@@ -102,8 +92,6 @@ func Test_ListInsert(t *testing.T) {
 }
 
 func Test_ListInsert_ListNotExists_Return0(t *testing.T) {
-	strg := Init(0, 1)
-
 	count, err := strg.ListInsert("any1", []string{"any2"})
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
@@ -115,8 +103,6 @@ func Test_ListInsert_ListNotExists_Return0(t *testing.T) {
 }
 
 func Test_ListInsert_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToAdd := []string{"str2"}
 	initialArr := 2
@@ -142,8 +128,6 @@ func Test_ListInsert_GetErrWrongType(t *testing.T) {
 }
 
 func Test_ListPop(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToGet := "str2"
 	initialArr := []string{"str1", valueToGet}
@@ -167,8 +151,6 @@ func Test_ListPop(t *testing.T) {
 }
 
 func Test_ListPop_ListNotExists_ReturnEmptyString(t *testing.T) {
-	strg := Init(0, 1)
-
 	res, err := strg.ListPop("any")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
@@ -180,8 +162,6 @@ func Test_ListPop_ListNotExists_ReturnEmptyString(t *testing.T) {
 }
 
 func Test_ListPop_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	initialArr := 2
 
@@ -206,8 +186,6 @@ func Test_ListPop_GetErrWrongType(t *testing.T) {
 }
 
 func Test_ListIndex(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	expected := "str2"
 	valueToSet := []string{"str1", expected}
@@ -224,8 +202,6 @@ func Test_ListIndex(t *testing.T) {
 }
 
 func Test_ListIndex_GetErrOutOfRange(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	valueToSet := []string{"str1", "str2"}
 	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
@@ -249,8 +225,6 @@ func Test_ListIndex_GetErrOutOfRange(t *testing.T) {
 }
 
 func Test_ListIndex_GetErrWrongType(t *testing.T) {
-	strg := Init(0, 1)
-
 	key := "key1"
 	initialArr := 2
 
@@ -275,8 +249,6 @@ func Test_ListIndex_GetErrWrongType(t *testing.T) {
 }
 
 func Test_ListIndex_ListNotExists_ReturnEmptyString(t *testing.T) {
-	strg := Init(0, 1)
-
 	res, err := strg.ListIndex("any", 29)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())

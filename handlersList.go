@@ -51,13 +51,13 @@ func (cr *CustomRedis) ListInsert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cr.Storage.ListInsert(req.Key, req.Value)
+	count, err := cr.Storage.ListInsert(req.Key, req.Value)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
 
-	WriteResponseEmpty(w, r, http.StatusCreated)
+	WriteResponseData(w, r, http.StatusCreated, count)
 }
 
 func (cr *CustomRedis) GetList(w http.ResponseWriter, r *http.Request) {

@@ -1,7 +1,7 @@
 package storage
 
 // SetList sets key to hold the string array value
-func (s *Storage) SetList(key string, value []string, expirationSec int64) {
+func (s *Storage) SetList(key string, value []string, expirationSec uint64) {
 	s.set(key, value, expirationSec)
 }
 
@@ -19,7 +19,7 @@ func (s *Storage) GetList(key string) ([]string, error) {
 	return nil, newErrCustom(errWrongType)
 }
 
-// ListInsert adds string elements to the end of the array stored by the specified key and return array`s length
+// ListInsert adds string elements to the end of the array stored by the specified key and returns array`s length
 func (s *Storage) ListInsert(key string, items []string) (int, error) {
 	shard := s.getShard(key)
 
@@ -42,7 +42,7 @@ func (s *Storage) ListInsert(key string, items []string) (int, error) {
 	return 0, nil
 }
 
-// ListPop returns the last string element of the array stored by the specified key
+// ListPop removes and returns the last string element of the array stored by the specified key
 func (s *Storage) ListPop(key string) (string, error) {
 	shard := s.getShard(key)
 

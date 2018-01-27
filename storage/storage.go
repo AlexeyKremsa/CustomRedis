@@ -10,7 +10,7 @@ import (
 
 type Item struct {
 	Value      interface{}
-	Expiration int64
+	Expiration uint64
 }
 
 type Storage struct {
@@ -42,13 +42,12 @@ func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 }
 
 func (s *Storage) cleanup() {
-	seed := rand.NewSource(time.Now().UnixNano())
-	rnd := rand.New(seed)
-
 	var shardIndex int
 	if s.shardCountDecremented == 0 {
 		shardIndex = 0
 	} else {
+		seed := rand.NewSource(time.Now().UnixNano())
+		rnd := rand.New(seed)
 		shardIndex = rnd.Intn(int(s.shardCountDecremented))
 	}
 
@@ -76,21 +75,21 @@ func (s *Storage) runCleanup(timeoutSec uint64) {
 	}
 }
 
-func (s *Storage) set(key string, value interface{}, expirationSec int64) {
+func (s *Storage) set(key string, value interface{}, expirationSec uint64) {
 	shard := s.getShard(key)
 
 	var expTime int64
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
 	}
-	item := Item{Value: value, Expiration: expTime}
+	item := Item{Value: value, Expiration: uint64(expTime)}
 
 	shard.mutex.Lock()
 	defer shard.mutex.Unlock()
 	shard.keyValues[key] = item
 }
 
-func (s *Storage) setNX(key string, value interface{}, expirationSec int64) error {
+func (s *Storage) setNX(key string, value interface{}, expirationSec uint64) error {
 	shard := s.getShard(key)
 
 	shard.mutex.Lock()
@@ -104,7 +103,7 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec int64) erro
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
 	}
-	item := Item{Value: value, Expiration: expTime}
+	item := Item{Value: value, Expiration: uint64(expTime)}
 
 	shard.keyValues[key] = item
 
@@ -134,8 +133,8 @@ func (s *Storage) RemoveItem(key string) {
 	delete(shard.keyValues, key)
 }
 
-func isExpired(expiration int64) bool {
-	if expiration > 0 && time.Now().Unix() > expiration {
+func isExpired(expiration uint64) bool {
+	if expiration > 0 && time.Now().Unix() > int64(expiration) {
 		return true
 	}
 	return false
