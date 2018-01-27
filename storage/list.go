@@ -7,17 +7,20 @@ func (s *Storage) SetList(key string, value []string, expirationSec int64) {
 
 // GetList returns string array accroding to the key
 func (s *Storage) GetList(key string) ([]string, error) {
-	val := s.get(key)
+	item := s.get(key)
+	if item == nil {
+		return nil, nil
+	}
 
-	if list, ok := val.([]string); ok {
+	if list, ok := item.Value.([]string); ok {
 		return list, nil
 	}
 
 	return nil, newErrCustom(errWrongType)
 }
 
-// ListPush adds string elements to the end of the array stored by the specified key
-func (s *Storage) ListPush(key string, items []string) error {
+// ListInsert adds string elements to the end of the array stored by the specified key and return array`s length
+func (s *Storage) ListInsert(key string, items []string) (int, error) {
 	shard := s.getShard(key)
 
 	shard.mutex.Lock()
@@ -25,18 +28,18 @@ func (s *Storage) ListPush(key string, items []string) error {
 
 	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
-			return newErrCustom(errNotExist)
+			return 0, nil
 		}
 
 		if list, ok := item.Value.([]string); ok {
 			list = append(list, items...)
 			item.Value = list
 			shard.keyValues[key] = item
-			return nil
+			return len(list), nil
 		}
-		return newErrCustom(errWrongType)
+		return 0, newErrCustom(errWrongType)
 	}
-	return newErrCustom(errNotExist)
+	return 0, nil
 }
 
 // ListPop returns the last string element of the array stored by the specified key
@@ -48,7 +51,7 @@ func (s *Storage) ListPop(key string) (string, error) {
 
 	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
-			return "", newErrCustom(errNotExist)
+			return "", nil
 		}
 
 		if list, ok := item.Value.([]string); ok {
@@ -59,7 +62,7 @@ func (s *Storage) ListPop(key string) (string, error) {
 		}
 		return "", newErrCustom(errWrongType)
 	}
-	return "", newErrCustom(errNotExist)
+	return "", nil
 }
 
 // ListIndex returns array element at specified index
@@ -71,7 +74,7 @@ func (s *Storage) ListIndex(key string, index int) (string, error) {
 
 	if item, ok := shard.keyValues[key]; ok {
 		if isExpired(item.Expiration) {
-			return "", newErrCustom(errNotExist)
+			return "", nil
 		}
 
 		if list, ok := item.Value.([]string); ok {
@@ -82,5 +85,5 @@ func (s *Storage) ListIndex(key string, index int) (string, error) {
 		}
 		return "", newErrCustom(errWrongType)
 	}
-	return "", newErrCustom(errNotExist)
+	return "", nil
 }

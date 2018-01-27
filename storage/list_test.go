@@ -22,7 +22,24 @@ func Test_SetList(t *testing.T) {
 	}
 }
 
-func Test_SetList_GetErrWrongType(t *testing.T) {
+func Test_GetList(t *testing.T) {
+	strg := Init(0, 1)
+
+	key := "key1"
+	valueToSet := []string{"str1", "str2"}
+	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+
+	res, err := strg.GetList(key)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+
+	if !reflect.DeepEqual(valueToSet, res) {
+		t.Fatalf("Expected:`%v`, actual: `%v`", valueToSet, res)
+	}
+}
+
+func Test_GetList_GetErrWrongType(t *testing.T) {
 	strg := Init(0, 1)
 
 	key := "key1"
@@ -43,24 +60,20 @@ func Test_SetList_GetErrWrongType(t *testing.T) {
 	}
 }
 
-func Test_GetList(t *testing.T) {
+func Test_GetList_ListNotExists_ReturnNil(t *testing.T) {
 	strg := Init(0, 1)
 
-	key := "key1"
-	valueToSet := []string{"str1", "str2"}
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
-
-	res, err := strg.GetList(key)
+	res, err := strg.GetList("any")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
 	}
 
-	if !reflect.DeepEqual(valueToSet, res) {
-		t.Fatalf("Expected:`%v`, actual: `%v`", valueToSet, res)
+	if res != nil {
+		t.Fatalf("Expected result to nil, but got: %v", res)
 	}
 }
 
-func Test_ListPush(t *testing.T) {
+func Test_ListInsert(t *testing.T) {
 	strg := Init(0, 1)
 
 	key := "key1"
@@ -70,9 +83,13 @@ func Test_ListPush(t *testing.T) {
 
 	strg.shards[0].keyValues[key] = Item{Value: initialArr}
 
-	err := strg.ListPush(key, valueToAdd)
+	count, err := strg.ListInsert(key, valueToAdd)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+
+	if count != len(expected) {
+		t.Fatalf("Expected count: %d, actual: %d", len(expected), count)
 	}
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
@@ -84,18 +101,35 @@ func Test_ListPush(t *testing.T) {
 	}
 }
 
-func Test_ListPush_GetErrWrongType(t *testing.T) {
+func Test_ListInsert_ListNotExists_Return0(t *testing.T) {
+	strg := Init(0, 1)
+
+	count, err := strg.ListInsert("any1", []string{"any2"})
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+
+	if count != 0 {
+		t.Fatalf("Expected count: %d, actual: %d", 0, count)
+	}
+}
+
+func Test_ListInsert_GetErrWrongType(t *testing.T) {
 	strg := Init(0, 1)
 
 	key := "key1"
 	valueToAdd := []string{"str2"}
 	initialArr := 2
-
+	expectedCount := 0
 	strg.shards[0].keyValues[key] = Item{Value: initialArr}
 
-	err := strg.ListPush(key, valueToAdd)
+	count, err := strg.ListInsert(key, valueToAdd)
 	if err == nil {
 		t.Fatalf("Expected error: `%s` but got nil", errWrongType)
+	}
+
+	if count != expectedCount {
+		t.Fatalf("Expected count: %d, actual: %d", expectedCount, count)
 	}
 
 	if _, ok := err.(ErrBusiness); !ok {
@@ -104,25 +138,6 @@ func Test_ListPush_GetErrWrongType(t *testing.T) {
 
 	if err.Error() != errWrongType {
 		t.Fatalf("Expected error: `%s`, actual: `%s`", errWrongType, err.Error())
-	}
-}
-
-func Test_ListPush_GetErrNotExist(t *testing.T) {
-	strg := Init(0, 1)
-
-	valueToAdd := []string{"str2"}
-
-	err := strg.ListPush("newKey", valueToAdd)
-	if err == nil {
-		t.Fatalf("Expected error: `%s` but got nil", errNotExist)
-	}
-
-	if _, ok := err.(ErrBusiness); !ok {
-		t.Fatalf("Unexpected error type")
-	}
-
-	if err.Error() != errNotExist {
-		t.Fatalf("Expected error: `%s`, actual: `%s`", errNotExist, err.Error())
 	}
 }
 
@@ -151,6 +166,19 @@ func Test_ListPop(t *testing.T) {
 	}
 }
 
+func Test_ListPop_ListNotExists_ReturnEmptyString(t *testing.T) {
+	strg := Init(0, 1)
+
+	res, err := strg.ListPop("any")
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
+	}
+
+	if res != "" {
+		t.Fatalf("Exptected result to be empty, but got: %s", res)
+	}
+}
+
 func Test_ListPop_GetErrWrongType(t *testing.T) {
 	strg := Init(0, 1)
 
@@ -174,32 +202,6 @@ func Test_ListPop_GetErrWrongType(t *testing.T) {
 
 	if err.Error() != errWrongType {
 		t.Fatalf("Expected error: `%s`, actual: `%s`", errWrongType, err.Error())
-	}
-}
-
-func Test_ListPop_GetErrNotExist(t *testing.T) {
-	strg := Init(0, 1)
-
-	key := "key1"
-	initialArr := []string{"str1"}
-
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
-
-	val, err := strg.ListPop("newKey")
-	if err == nil {
-		t.Fatalf("Expected error: `%s` but got nil", errWrongType)
-	}
-
-	if val != "" {
-		t.Fatalf("Expected to have an empty value, but got: %s", val)
-	}
-
-	if _, ok := err.(ErrBusiness); !ok {
-		t.Fatalf("Unexpected error type")
-	}
-
-	if err.Error() != errNotExist {
-		t.Fatalf("Expected error: `%s`, actual: `%s`", errNotExist, err.Error())
 	}
 }
 
@@ -242,7 +244,7 @@ func Test_ListIndex_GetErrOutOfRange(t *testing.T) {
 	}
 
 	if err.Error() != errIndexOutOfRange {
-		t.Fatalf("Expected error: `%s`, actual: `%s`", errNotExist, err.Error())
+		t.Fatalf("Expected error: `%s`, actual: `%s`", errIndexOutOfRange, err.Error())
 	}
 }
 
@@ -272,28 +274,15 @@ func Test_ListIndex_GetErrWrongType(t *testing.T) {
 	}
 }
 
-func Test_ListIndex_GetErrNotExist(t *testing.T) {
+func Test_ListIndex_ListNotExists_ReturnEmptyString(t *testing.T) {
 	strg := Init(0, 1)
 
-	key := "key1"
-	initialArr := []string{"str1"}
-
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
-
-	val, err := strg.ListIndex("newKey", 2)
-	if err == nil {
-		t.Fatalf("Expected error: `%s` but got nil", errWrongType)
+	res, err := strg.ListIndex("any", 29)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err.Error())
 	}
 
-	if val != "" {
-		t.Fatalf("Expected to have an empty value, but got: %s", val)
-	}
-
-	if _, ok := err.(ErrBusiness); !ok {
-		t.Fatalf("Unexpected error type")
-	}
-
-	if err.Error() != errNotExist {
-		t.Fatalf("Expected error: `%s`, actual: `%s`", errNotExist, err.Error())
+	if res != "" {
+		t.Fatalf("Exptected result to be empty, but got: %s", res)
 	}
 }

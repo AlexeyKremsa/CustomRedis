@@ -44,7 +44,14 @@ func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 func (s *Storage) cleanup() {
 	seed := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(seed)
-	shardIndex := rnd.Intn(int(s.shardCountDecremented))
+
+	var shardIndex int
+	if s.shardCountDecremented == 0 {
+		shardIndex = 0
+	} else {
+		shardIndex = rnd.Intn(int(s.shardCountDecremented))
+	}
+
 	shard := s.shards[shardIndex]
 	log.Debugf("Cleanup started")
 
@@ -104,7 +111,7 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec int64) erro
 	return nil
 }
 
-func (s *Storage) get(key string) interface{} {
+func (s *Storage) get(key string) *Item {
 	shard := s.getShard(key)
 
 	shard.mutex.RLock()
@@ -114,7 +121,7 @@ func (s *Storage) get(key string) interface{} {
 		if isExpired(item.Expiration) {
 			return nil
 		}
-		return item.Value
+		return &item
 	}
 	return nil
 }

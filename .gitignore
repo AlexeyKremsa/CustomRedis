@@ -4,3 +4,5 @@ debug
 CustomRedis
 
 \.vscode/launch\.json
+
+storage/debug\.test

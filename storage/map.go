@@ -5,30 +5,26 @@ func (s *Storage) SetMap(key string, value map[string]string, expirationSec int6
 }
 
 func (s *Storage) GetMap(key string) (map[string]string, error) {
-	val := s.get(key)
+	item := s.get(key)
+	if item == nil {
+		return nil, nil
+	}
 
-	if item, ok := val.(map[string]string); ok {
-		return item, nil
+	if m, ok := item.Value.(map[string]string); ok {
+		return m, nil
 	}
 
 	return nil, newErrCustom(errWrongType)
 }
 
 func (s *Storage) GetMapItem(key, itemKey string) (string, error) {
-	shard := s.getShard(key)
-
-	shard.mutex.Lock()
-	defer shard.mutex.Unlock()
-
-	if item, ok := shard.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
-			return "", newErrCustom(errNotExist)
-		}
-
-		if m, ok := item.Value.(map[string]string); ok {
-			return m[itemKey], nil
-		}
-		return "", newErrCustom(errWrongType)
+	item := s.get(key)
+	if item == nil {
+		return "", nil
 	}
-	return "", newErrCustom(errNotExist)
+
+	if m, ok := item.Value.(map[string]string); ok {
+		return m[itemKey], nil
+	}
+	return "", newErrCustom(errWrongType)
 }

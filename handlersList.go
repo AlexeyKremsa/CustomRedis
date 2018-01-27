@@ -33,7 +33,7 @@ func (cr *CustomRedis) SetList(w http.ResponseWriter, r *http.Request) {
 	WriteResponseEmpty(w, r, http.StatusCreated)
 }
 
-func (cr *CustomRedis) PushList(w http.ResponseWriter, r *http.Request) {
+func (cr *CustomRedis) ListInsert(w http.ResponseWriter, r *http.Request) {
 	var req ListUpdateRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -51,7 +51,7 @@ func (cr *CustomRedis) PushList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cr.Storage.ListPush(req.Key, req.Value)
+	err = cr.Storage.ListInsert(req.Key, req.Value)
 	if err != nil {
 		handleError(w, r, err)
 		return

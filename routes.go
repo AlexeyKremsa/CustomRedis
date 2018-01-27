@@ -91,10 +91,10 @@ func allRoutes(cr *CustomRedis) []Route {
 			HandlerFunc: cr.GetList,
 		},
 		Route{
-			Description: "Get list by key",
+			Description: "Add element to the end of the list",
 			Method:      "POST",
-			Path:        "/listpush",
-			HandlerFunc: cr.PushList,
+			Path:        "/listinsert",
+			HandlerFunc: cr.ListInsert,
 		},
 		Route{
 			Description: "Removes and returns the last element of the list stored at key",

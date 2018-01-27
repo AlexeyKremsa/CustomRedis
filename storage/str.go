@@ -12,9 +12,12 @@ func (s *Storage) SetStrNX(key, value string, expirationSec int64) error {
 
 // GetStr gets string value of the key
 func (s *Storage) GetStr(key string) (string, error) {
-	val := s.get(key)
+	item := s.get(key)
+	if item == nil {
+		return "", nil
+	}
 
-	if str, ok := val.(string); ok {
+	if str, ok := item.Value.(string); ok {
 		return str, nil
 	}
 	return "", newErrCustom(errWrongType)
