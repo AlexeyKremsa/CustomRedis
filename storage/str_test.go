@@ -4,18 +4,6 @@ import (
 	"testing"
 )
 
-// func BenchmarkSetStrAndGetStr(b *testing.B) {
-// 	st := Init()
-
-// 	for i := 0; i < b.N; i++ {
-// 		st.SetStr(fmt.Sprintf("key-%d", i), fmt.Sprintf("val-%d", i), 1)
-// 	}
-
-// 	for i := 0; i < b.N; i++ {
-// 		st.GetStr(fmt.Sprintf("key-%d", i))
-// 	}
-// }
-
 func Test_SetStr(t *testing.T) {
 	key := "key1"
 	valueToSet := "str1"

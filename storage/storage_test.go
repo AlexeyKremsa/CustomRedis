@@ -9,7 +9,7 @@ import (
 var strg *Storage
 
 func TestMain(m *testing.M) {
-	strg = Init(0, 1)
+	strg = Init(11111, 1)
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }
@@ -47,5 +47,41 @@ func Test_cleanup(t *testing.T) {
 
 	if len(strg.shards[0].keyValues) != 2 {
 		t.Fatalf("Expected to delete 2 elements from 4")
+	}
+}
+
+func Test_GetAllKeys_1shard(t *testing.T) {
+	s1 := Init(1111, 1)
+
+	s1.shards[0].keyValues["k1"] = item{value: "t1"}
+	s1.shards[0].keyValues["k2"] = item{value: "t1"}
+	s1.shards[0].keyValues["k3"] = item{value: "t1"}
+
+	res := s1.GetAllKeys()
+
+	// keys are unordered!
+	for _, val := range res {
+		if val == "k1" || val == "k2" || val == "k3" {
+			continue
+		}
+		t.Fatalf("Unexpected key: %s", val)
+	}
+}
+
+func Test_GetAllKeys_2shards(t *testing.T) {
+	s2 := Init(1111, 2)
+
+	s2.shards[0].keyValues["k1"] = item{value: "t1"}
+	s2.shards[0].keyValues["k2"] = item{value: "t1"}
+	s2.shards[1].keyValues["k3"] = item{value: "t1"}
+
+	res := s2.GetAllKeys()
+
+	// keys are unordered!
+	for _, val := range res {
+		if val == "k1" || val == "k2" || val == "k3" {
+			continue
+		}
+		t.Fatalf("Unexpected key: %s", val)
 	}
 }

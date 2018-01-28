@@ -1,1 +1,2 @@
 CleanupTimeoutSec = 20
+ShardCount=3

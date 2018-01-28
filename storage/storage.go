@@ -164,7 +164,7 @@ func (s *Storage) GetAllKeys() []string {
 }
 
 func collectKeys(shard *shard, resCh chan []string, wg *sync.WaitGroup) {
-	res := make([]string, len(shard.keyValues)-1)
+	res := make([]string, 0)
 
 	shard.mutex.RLock()
 	defer shard.mutex.RUnlock()
