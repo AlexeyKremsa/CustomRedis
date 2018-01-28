@@ -17,7 +17,7 @@ func (s *Storage) GetStr(key string) (string, error) {
 		return "", nil
 	}
 
-	if str, ok := item.Value.(string); ok {
+	if str, ok := item.value.(string); ok {
 		return str, nil
 	}
 	return "", newErrCustom(errWrongType)

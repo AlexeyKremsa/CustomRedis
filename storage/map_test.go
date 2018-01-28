@@ -13,8 +13,8 @@ func Test_SetMap(t *testing.T) {
 	strg.SetMap(key, valueToSet, 0)
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		if !reflect.DeepEqual(valueToSet, v.Value) {
-			t.Fatalf("Expected: %v, actual: %v", valueToSet, v.Value)
+		if !reflect.DeepEqual(valueToSet, v.value) {
+			t.Fatalf("Expected: %v, actual: %v", valueToSet, v.value)
 		}
 	} else {
 		t.Fatalf("Expected to find value `%v` by key `%s`", valueToSet, key)
@@ -25,7 +25,7 @@ func Test_GetMap(t *testing.T) {
 	key := "key1"
 	valueToSet := make(map[string]string)
 	valueToSet["k"] = "v"
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetMap(key)
 	if err != nil {
@@ -51,7 +51,7 @@ func Test_GetMap_MapNotExists_ReturnNil(t *testing.T) {
 func Test_GetMap_GetErrWrongType(t *testing.T) {
 	key := "key1"
 	valueToSet := 2
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetMap(key)
 	if err == nil {
@@ -77,7 +77,7 @@ func Test_GetMapItem(t *testing.T) {
 	itemKey := "k"
 	itemValue := "v"
 	valueToSet[itemKey] = itemValue
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetMapItem(key, itemKey)
 	if err != nil {
@@ -103,7 +103,7 @@ func Test_GetMapItem_MapNotExists_ReturnNil(t *testing.T) {
 func Test_GetMapItem_GetErrWrongType(t *testing.T) {
 	key := "key1"
 	valueToSet := 2
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetMapItem(key, "any")
 	if err == nil {
@@ -129,7 +129,7 @@ func Test_GetMapItem_KeyNotExists_ReturnEmptyString(t *testing.T) {
 	itemKey := "k"
 	itemValue := "v"
 	valueToSet[itemKey] = itemValue
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetMapItem(key, "any2")
 	if err != nil {

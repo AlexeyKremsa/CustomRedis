@@ -136,5 +136,11 @@ func allRoutes(cr *CustomRedis) []Route {
 			Path:        "/del",
 			QueryPairs:  "key,{key}",
 			HandlerFunc: cr.Delete,
+		},
+		Route{
+			Description: "Get all keys",
+			Method:      "GET",
+			Path:        "/keys",
+			HandlerFunc: cr.Keys,
 		}}
 }

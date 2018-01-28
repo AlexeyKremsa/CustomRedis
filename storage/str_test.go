@@ -23,8 +23,8 @@ func Test_SetStr(t *testing.T) {
 	strg.SetStr(key, valueToSet, 0)
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		if valueToSet != v.Value {
-			t.Fatalf("Expected: %s, actual: %s", valueToSet, v.Value)
+		if valueToSet != v.value {
+			t.Fatalf("Expected: %s, actual: %s", valueToSet, v.value)
 		}
 	} else {
 		t.Fatalf("Expected to find value `%s` by key `%s`", valueToSet, key)
@@ -38,8 +38,8 @@ func Test_SetStrNX(t *testing.T) {
 	strg.SetStrNX(key, valueToSet, 0)
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		if valueToSet != v.Value {
-			t.Fatalf("Expected: %s, actual: %s", valueToSet, v.Value)
+		if valueToSet != v.value {
+			t.Fatalf("Expected: %s, actual: %s", valueToSet, v.value)
 		}
 	} else {
 		t.Fatalf("Expected to find value `%s` by key `%s`", valueToSet, key)
@@ -49,7 +49,7 @@ func Test_SetStrNX(t *testing.T) {
 func Test_SetStrNX_GetKeyExistsError(t *testing.T) {
 	key := "key1"
 	valueToSet := "str1"
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	err := strg.SetStrNX(key, valueToSet, 0)
 	if errCustom, ok := err.(ErrBusiness); ok {
@@ -64,7 +64,7 @@ func Test_SetStrNX_GetKeyExistsError(t *testing.T) {
 func Test_GetStr(t *testing.T) {
 	key := "key1"
 	valueToSet := "str1"
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	val, err := strg.GetStr(key)
 	if err != nil {
@@ -89,7 +89,7 @@ func Test_GetStr_NotExists_ReturnEmptyString(t *testing.T) {
 
 func Test_GetStr_GetErrWronType(t *testing.T) {
 	key := "key1"
-	strg.shards[0].keyValues[key] = Item{Value: []string{"q", "w"}}
+	strg.shards[0].keyValues[key] = item{value: []string{"q", "w"}}
 
 	val, err := strg.GetStr(key)
 	if err == nil {

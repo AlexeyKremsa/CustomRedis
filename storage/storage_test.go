@@ -17,12 +17,12 @@ func TestMain(m *testing.M) {
 func Test_RemoveItem(t *testing.T) {
 	key := "key1"
 	valueToSet := "str1"
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	strg.RemoveItem(key)
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		t.Fatalf("Value should have been removed, but got: %s", v.Value)
+		t.Fatalf("Value should have been removed, but got: %s", v.value)
 	}
 }
 

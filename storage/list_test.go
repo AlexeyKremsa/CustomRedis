@@ -12,8 +12,8 @@ func Test_SetList(t *testing.T) {
 	strg.SetList(key, valueToSet, 0)
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		if !reflect.DeepEqual(valueToSet, v.Value) {
-			t.Fatalf("Expected: %v, actual: %v", valueToSet, v.Value)
+		if !reflect.DeepEqual(valueToSet, v.value) {
+			t.Fatalf("Expected: %v, actual: %v", valueToSet, v.value)
 		}
 	} else {
 		t.Fatalf("Expected to find value `%v` by key `%s`", valueToSet, key)
@@ -23,7 +23,7 @@ func Test_SetList(t *testing.T) {
 func Test_GetList(t *testing.T) {
 	key := "key1"
 	valueToSet := []string{"str1", "str2"}
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.GetList(key)
 	if err != nil {
@@ -38,7 +38,7 @@ func Test_GetList(t *testing.T) {
 func Test_GetList_GetErrWrongType(t *testing.T) {
 	key := "key1"
 	valueToSet := 2
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	val, err := strg.GetList(key)
 	if err == nil {
@@ -71,7 +71,7 @@ func Test_ListInsert(t *testing.T) {
 	initialArr := []string{"str1"}
 	expected := []string{"str1", "str2"}
 
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
+	strg.shards[0].keyValues[key] = item{value: initialArr}
 
 	count, err := strg.ListInsert(key, valueToAdd)
 	if err != nil {
@@ -83,8 +83,8 @@ func Test_ListInsert(t *testing.T) {
 	}
 
 	if v, ok := strg.shards[0].keyValues[key]; ok {
-		if !reflect.DeepEqual(expected, v.Value) {
-			t.Fatalf("Expected: %v, actual: %v", expected, v.Value)
+		if !reflect.DeepEqual(expected, v.value) {
+			t.Fatalf("Expected: %v, actual: %v", expected, v.value)
 		}
 	} else {
 		t.Fatalf("Expected to find value `%v` by key `%s`", expected, key)
@@ -107,7 +107,7 @@ func Test_ListInsert_GetErrWrongType(t *testing.T) {
 	valueToAdd := []string{"str2"}
 	initialArr := 2
 	expectedCount := 0
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
+	strg.shards[0].keyValues[key] = item{value: initialArr}
 
 	count, err := strg.ListInsert(key, valueToAdd)
 	if err == nil {
@@ -133,7 +133,7 @@ func Test_ListPop(t *testing.T) {
 	initialArr := []string{"str1", valueToGet}
 	expectedArr := []string{"str1"}
 
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
+	strg.shards[0].keyValues[key] = item{value: initialArr}
 
 	res, err := strg.ListPop(key)
 	if err != nil {
@@ -144,7 +144,7 @@ func Test_ListPop(t *testing.T) {
 		t.Fatalf("Expecetd: %s, actual: %s", valueToGet, res)
 	}
 
-	modifiedArr := strg.shards[0].keyValues[key].Value
+	modifiedArr := strg.shards[0].keyValues[key].value
 	if !reflect.DeepEqual(modifiedArr, expectedArr) {
 		t.Fatalf("Expected: %v, actual: %v", modifiedArr, expectedArr)
 	}
@@ -165,7 +165,7 @@ func Test_ListPop_GetErrWrongType(t *testing.T) {
 	key := "key1"
 	initialArr := 2
 
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
+	strg.shards[0].keyValues[key] = item{value: initialArr}
 
 	val, err := strg.ListPop(key)
 	if err == nil {
@@ -189,7 +189,7 @@ func Test_ListIndex(t *testing.T) {
 	key := "key1"
 	expected := "str2"
 	valueToSet := []string{"str1", expected}
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	res, err := strg.ListIndex(key, 1)
 	if err != nil {
@@ -204,7 +204,7 @@ func Test_ListIndex(t *testing.T) {
 func Test_ListIndex_GetErrOutOfRange(t *testing.T) {
 	key := "key1"
 	valueToSet := []string{"str1", "str2"}
-	strg.shards[0].keyValues[key] = Item{Value: valueToSet}
+	strg.shards[0].keyValues[key] = item{value: valueToSet}
 
 	val, err := strg.ListIndex(key, 15)
 	if err == nil {
@@ -228,7 +228,7 @@ func Test_ListIndex_GetErrWrongType(t *testing.T) {
 	key := "key1"
 	initialArr := 2
 
-	strg.shards[0].keyValues[key] = Item{Value: initialArr}
+	strg.shards[0].keyValues[key] = item{value: initialArr}
 
 	val, err := strg.ListIndex(key, 0)
 	if err == nil {

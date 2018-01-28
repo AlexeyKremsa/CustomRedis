@@ -8,11 +8,12 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-type Item struct {
-	Value      interface{}
-	Expiration uint64
+type item struct {
+	value      interface{}
+	expiration uint64
 }
 
+// Storage describes storage settings and fields
 type Storage struct {
 	// pre-calculated value which is used to determine a shard
 	shardCountDecremented uint64
@@ -22,14 +23,15 @@ type Storage struct {
 type shard struct {
 	mutex sync.RWMutex
 	// Also sync.Map could be considered for systems with heavy read operations and big amount of CPU cores
-	keyValues map[string]Item
+	keyValues map[string]item
 }
 
+// Init creates Storage object
 func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 	strg := &Storage{shardCountDecremented: shardCount - 1}
 	strg.shards = make([]*shard, shardCount)
 	for i := 0; i < int(shardCount); i++ {
-		strg.shards[i] = &shard{keyValues: make(map[string]Item)}
+		strg.shards[i] = &shard{keyValues: make(map[string]item)}
 	}
 
 	if cleanupTimeoutSec > 0 {
@@ -39,6 +41,13 @@ func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
 	}
 
 	return strg
+}
+
+func isExpired(expiration uint64) bool {
+	if expiration > 0 && time.Now().Unix() > int64(expiration) {
+		return true
+	}
+	return false
 }
 
 func (s *Storage) cleanup() {
@@ -58,7 +67,7 @@ func (s *Storage) cleanup() {
 	defer shard.mutex.Unlock()
 
 	for key, val := range shard.keyValues {
-		if isExpired(val.Expiration) {
+		if isExpired(val.expiration) {
 			delete(shard.keyValues, key)
 		}
 	}
@@ -82,11 +91,11 @@ func (s *Storage) set(key string, value interface{}, expirationSec uint64) {
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
 	}
-	item := Item{Value: value, Expiration: uint64(expTime)}
+	itm := item{value: value, expiration: uint64(expTime)}
 
 	shard.mutex.Lock()
 	defer shard.mutex.Unlock()
-	shard.keyValues[key] = item
+	shard.keyValues[key] = itm
 }
 
 func (s *Storage) setNX(key string, value interface{}, expirationSec uint64) error {
@@ -103,24 +112,24 @@ func (s *Storage) setNX(key string, value interface{}, expirationSec uint64) err
 	if expirationSec > 0 {
 		expTime = time.Now().Add(time.Second * time.Duration(expirationSec)).Unix()
 	}
-	item := Item{Value: value, Expiration: uint64(expTime)}
+	itm := item{value: value, expiration: uint64(expTime)}
 
-	shard.keyValues[key] = item
+	shard.keyValues[key] = itm
 
 	return nil
 }
 
-func (s *Storage) get(key string) *Item {
+func (s *Storage) get(key string) *item {
 	shard := s.getShard(key)
 
 	shard.mutex.RLock()
 	defer shard.mutex.RUnlock()
 
-	if item, ok := shard.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
+	if itm, ok := shard.keyValues[key]; ok {
+		if isExpired(itm.expiration) {
 			return nil
 		}
-		return &item
+		return &itm
 	}
 	return nil
 }
@@ -133,9 +142,39 @@ func (s *Storage) RemoveItem(key string) {
 	delete(shard.keyValues, key)
 }
 
-func isExpired(expiration uint64) bool {
-	if expiration > 0 && time.Now().Unix() > int64(expiration) {
-		return true
+// GetAllKeys returns all keys
+func (s *Storage) GetAllKeys() []string {
+	var wg sync.WaitGroup
+	resCh := make(chan []string, len(s.shards))
+	allKeys := make([]string, 0)
+
+	for _, v := range s.shards {
+		wg.Add(1)
+		go collectKeys(v, resCh, &wg)
 	}
-	return false
+
+	wg.Wait()
+	close(resCh)
+
+	for keys := range resCh {
+		allKeys = append(allKeys, keys...)
+	}
+
+	return allKeys
+}
+
+func collectKeys(shard *shard, resCh chan []string, wg *sync.WaitGroup) {
+	res := make([]string, len(shard.keyValues)-1)
+
+	shard.mutex.RLock()
+	defer shard.mutex.RUnlock()
+
+	for key, val := range shard.keyValues {
+		if !isExpired(val.expiration) {
+			res = append(res, key)
+		}
+	}
+
+	resCh <- res
+	wg.Done()
 }

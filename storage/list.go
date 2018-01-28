@@ -12,7 +12,7 @@ func (s *Storage) GetList(key string) ([]string, error) {
 		return nil, nil
 	}
 
-	if list, ok := item.Value.([]string); ok {
+	if list, ok := item.value.([]string); ok {
 		return list, nil
 	}
 
@@ -27,13 +27,13 @@ func (s *Storage) ListInsert(key string, items []string) (int, error) {
 	defer shard.mutex.Unlock()
 
 	if item, ok := shard.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
+		if isExpired(item.expiration) {
 			return 0, nil
 		}
 
-		if list, ok := item.Value.([]string); ok {
+		if list, ok := item.value.([]string); ok {
 			list = append(list, items...)
-			item.Value = list
+			item.value = list
 			shard.keyValues[key] = item
 			return len(list), nil
 		}
@@ -50,13 +50,13 @@ func (s *Storage) ListPop(key string) (string, error) {
 	defer shard.mutex.Unlock()
 
 	if item, ok := shard.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
+		if isExpired(item.expiration) {
 			return "", nil
 		}
 
-		if list, ok := item.Value.([]string); ok {
+		if list, ok := item.value.([]string); ok {
 			lastElem := list[len(list)-1]
-			item.Value = list[:len(list)-1]
+			item.value = list[:len(list)-1]
 			shard.keyValues[key] = item
 			return lastElem, nil
 		}
@@ -73,11 +73,11 @@ func (s *Storage) ListIndex(key string, index int) (string, error) {
 	defer shard.mutex.Unlock()
 
 	if item, ok := shard.keyValues[key]; ok {
-		if isExpired(item.Expiration) {
+		if isExpired(item.expiration) {
 			return "", nil
 		}
 
-		if list, ok := item.Value.([]string); ok {
+		if list, ok := item.value.([]string); ok {
 			if index >= len(list) || index < 0 {
 				return "", newErrCustom(errIndexOutOfRange)
 			}

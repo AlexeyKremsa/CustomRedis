@@ -12,7 +12,7 @@ func (s *Storage) GetMap(key string) (map[string]string, error) {
 		return nil, nil
 	}
 
-	if m, ok := item.Value.(map[string]string); ok {
+	if m, ok := item.value.(map[string]string); ok {
 		return m, nil
 	}
 
@@ -26,7 +26,7 @@ func (s *Storage) GetMapItem(key, itemKey string) (string, error) {
 		return "", nil
 	}
 
-	if m, ok := item.Value.(map[string]string); ok {
+	if m, ok := item.value.(map[string]string); ok {
 		return m[itemKey], nil
 	}
 	return "", newErrCustom(errWrongType)
