@@ -1,4 +1,4 @@
-###API
+**API**
 
 - ../
 GET  
@@ -51,7 +51,65 @@ GET
 Parameters: key
 Get list by key
 Example:
-../list?key=k1
+..list?key=k1
+
+- ../listinsert
+POST
+Add elements to the end of the list. Returns list length.
+:
+```json
+{
+   "key": "k1",
+   "listValue": ["q1", "q2", "q3"]
+}
+```
+
+- ../listpop
+GET
+Parameters: key
+Removes and returns the last element of the list stored at key
+Example:
+../listpop?key=k1
+
+
+- ../listindex
+GET
+Parameters: key, index
+Returns the element at index in the list stored at key
+Example:
+../listindex?key=k1&index=1
+
+- ../map
+POST
+Set map key and value
+Example:
+```json
+{
+   "key": "k1",
+   "mapValue": { "m1" : "v1"},
+   "expirationSec": 110
+}
+```
+
+- ../map
+GET  
+Parameters: key  
+Get map by key  
+Example:  
+../map?key=k1  
+
+- ../del
+DELETE
+Parameters: key  
+Delete value by key
+Example:
+../del?key=k1
+
+- ../keys
+GET  
+Get all keys  
+Example:  
+../keys  
 
 
 

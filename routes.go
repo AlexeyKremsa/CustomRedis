@@ -91,7 +91,7 @@ func allRoutes(cr *CustomRedis) []Route {
 			HandlerFunc: cr.GetList,
 		},
 		Route{
-			Description: "Add element to the end of the list",
+			Description: "Add elements to the end of the list",
 			Method:      "POST",
 			Path:        "/listinsert",
 			HandlerFunc: cr.ListInsert,
