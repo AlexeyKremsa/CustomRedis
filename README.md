@@ -1,11 +1,13 @@
-**API**
+**CustomRedis**
 
-In order to run service - open a it's folder, run `go build` and `./CustomRedis`.
+In order to run service - open it's folder, run `go build` and `./CustomRedis`.  
 Parameters:  
 - Port (default: 8282)
 - LogLevel (default: debug)
 - CleanupTimeoutSec (default: 60)
 - ShardCount (default: 1)
+
+**API**
 
 - ../  
 GET    
