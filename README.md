@@ -1,13 +1,20 @@
 **API**
 
-- ../
-GET  
-Returns a simple response to check if server is alive
+In order to run service - open a it's folder, run `go build` and `./CustomRedis`.
+Parameters:  
+- Port (default: 8282)
+- LogLevel (default: debug)
+- CleanupTimeoutSec (default: 60)
+- ShardCount (default: 1)
 
--  ../str
-POST
-Set string key and value
-Example:
+- ../  
+GET    
+Returns a simple response to check if server is alive  
+
+-  ../str  
+POST  
+Set string key and value  
+Example:  
 ```json
 {
 	   "key": "k1",
@@ -16,10 +23,10 @@ Example:
 }
 ```
 
--  ../strnx
-POST
-Set string key and value in if key doesn't exist
-Example:
+-  ../strnx  
+POST  
+Set string key and value in if key doesn't exist  
+Example:  
 ```json
 {
 	   "key": "k1",
@@ -29,15 +36,16 @@ Example:
 ```
 
 - ../str
-GET
-Parameters: key
-Returns value stored by specified key
-Example: ../str?key=k1
+GET   
+Parameters: key   
+Returns value stored by specified key  
+Example:   
+`../str?key=k1`
 
 - ../list
-POST
-Set list key and value
-Example:
+POST  
+Set list key and value  
+Example:  
 ```json
 {
 	   "key": "k1",
@@ -46,17 +54,17 @@ Example:
 }
 ```
 
-- ../list
-GET
-Parameters: key
-Get list by key
-Example:
-..list?key=k1
+- ../list  
+GET  
+Parameters: key  
+Get list by key  
+Example:  
+`..list?key=k1`
 
 - ../listinsert
-POST
-Add elements to the end of the list. Returns list length.
-:
+POST  
+Add elements to the end of the list. Returns list length.  
+Example:  
 ```json
 {
    "key": "k1",
@@ -64,25 +72,25 @@ Add elements to the end of the list. Returns list length.
 }
 ```
 
-- ../listpop
-GET
-Parameters: key
-Removes and returns the last element of the list stored at key
-Example:
-../listpop?key=k1
+- ../listpop  
+GET  
+Parameters: key  
+Removes and returns the last element of the list stored at key  
+Example:  
+`../listpop?key=k1`
 
 
-- ../listindex
-GET
-Parameters: key, index
-Returns the element at index in the list stored at key
-Example:
-../listindex?key=k1&index=1
+- ../listindex  
+GET  
+Parameters: key, index  
+Returns the element at index in the list stored at key  
+Example:  
+`../listindex?key=k1&index=1`
 
-- ../map
-POST
-Set map key and value
-Example:
+- ../map  
+POST  
+Set map key and value  
+Example:  
 ```json
 {
    "key": "k1",
@@ -91,25 +99,25 @@ Example:
 }
 ```
 
-- ../map
-GET  
-Parameters: key  
+- ../map  
+GET    
+Parameters: key    
 Get map by key  
 Example:  
-../map?key=k1  
+`../map?key=k1  `  
 
 - ../del
-DELETE
+DELETE  
 Parameters: key  
-Delete value by key
-Example:
-../del?key=k1
+Delete value by key  
+Example:  
+`../del?key=k1`  
 
-- ../keys
-GET  
+- ../keys  
+GET   
 Get all keys  
 Example:  
-../keys  
+`../keys  `  
 
 
 

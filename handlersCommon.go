@@ -27,6 +27,7 @@ func (cr *CustomRedis) Keys(w http.ResponseWriter, r *http.Request) {
 
 	if len(keys) == 0 {
 		WriteResponseEmpty(w, r, http.StatusNoContent)
+		return
 	}
 
 	WriteResponseData(w, r, http.StatusOK, keys)
