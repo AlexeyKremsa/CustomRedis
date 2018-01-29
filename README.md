@@ -1,11 +1,14 @@
-**CustomRedis**
+**CustomRedis**  
+
+Simple REST-API key-value storage with string, list and dictionary support.
+
 
 In order to run the service - open it's folder, run `go build` and `./CustomRedis`.  
 Parameters:  
-- Port (default: 8282)
-- LogLevel (default: debug)
-- CleanupTimeoutSec (default: 60)
-- ShardCount (default: 1)
+- *Port* (default: 8282)
+- *LogLevel* (default: debug)
+- *CleanupTimeoutSec* (default: 60) - pick a random shard and remove expired keys every CleanupTimeoutSec seconds.
+- *ShardCount* (default: 1)
 
 **API**
 
@@ -40,7 +43,7 @@ Example:
 ```
 
   
-- ../str
+- ../str  
 GET   
 Parameters: key   
 Returns value stored by specified key  
@@ -48,7 +51,7 @@ Example:
 `../str?key=k1`
 
   
-- ../list
+- ../list  
 POST  
 Set list key and value  
 Example:  
