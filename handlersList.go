@@ -94,7 +94,13 @@ func (cr *CustomRedis) ListPop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if val == "" {
+		WriteResponseEmpty(w, r, http.StatusNoContent)
+		return
+	}
+
 	WriteResponseData(w, r, http.StatusOK, val)
+
 }
 func (cr *CustomRedis) ListIndex(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
@@ -118,6 +124,11 @@ func (cr *CustomRedis) ListIndex(w http.ResponseWriter, r *http.Request) {
 	val, err := cr.Storage.ListIndex(key, i)
 	if err != nil {
 		handleError(w, r, err)
+		return
+	}
+
+	if val == "" {
+		WriteResponseEmpty(w, r, http.StatusNoContent)
 		return
 	}
 
