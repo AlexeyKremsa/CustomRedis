@@ -10,6 +10,10 @@ Parameters:
 - *CleanupTimeoutSec* (default: 60) - pick a random shard and remove expired keys every CleanupTimeoutSec seconds.
 - *ShardCount* (default: 1)
 
+Response has two fields:   
+ - *message* - contain`s error message if exists, omit if empty
+ - *data* - contain`s server response, omit if empty  
+
 **API**
 
 - ../  
