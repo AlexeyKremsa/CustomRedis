@@ -1,6 +1,6 @@
 **CustomRedis**
 
-In order to run service - open it's folder, run `go build` and `./CustomRedis`.  
+In order to run the service - open it's folder, run `go build` and `./CustomRedis`.  
 Parameters:  
 - Port (default: 8282)
 - LogLevel (default: debug)
@@ -19,9 +19,9 @@ Set string key and value
 Example:  
 ```json
 {
-	   "key": "k1",
-	   "strValue": "v1",
-	   "expirationSec": 955
+	"key": "k1",
+	"strValue": "v1",
+	"expirationSec": 955
 }
 ```
 
