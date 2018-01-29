@@ -134,6 +134,7 @@ func (s *Storage) get(key string) *item {
 	return nil
 }
 
+// RemoveItem removes item stoed by key
 func (s *Storage) RemoveItem(key string) {
 	shard := s.getShard(key)
 

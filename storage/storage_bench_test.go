@@ -26,9 +26,9 @@ func Benchmark_GetAllKeys_1shard(b *testing.B) {
 	s1 := Init(11111, 1)
 
 	allKeysRes := make([]string, 0)
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		now := time.Now().UnixNano()
-		go s1.SetStr(fmt.Sprintf("key-%d", now), fmt.Sprintf("val-%d", now), 1111)
+		s1.SetStr(fmt.Sprintf("key-%d", now), fmt.Sprintf("val-%d", now), 1111)
 	}
 
 	b.ResetTimer()
@@ -42,9 +42,9 @@ func Benchmark_GetAllKeys_25shards(b *testing.B) {
 	s25 := Init(11111, 25)
 
 	allKeysRes := make([]string, 0)
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 1000; i++ {
 		now := time.Now().UnixNano()
-		go s25.SetStr(fmt.Sprintf("key-%d", now), fmt.Sprintf("val-%d", now), 1111)
+		s25.SetStr(fmt.Sprintf("key-%d", now), fmt.Sprintf("val-%d", now), 1111)
 	}
 
 	b.ResetTimer()
