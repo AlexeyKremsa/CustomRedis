@@ -4,6 +4,7 @@ const (
 	errWrongType       = "Operation against a key holding the wrong kind of value"
 	errIndexOutOfRange = "Index is out of range"
 	errKeyExists       = "Key already exists"
+	errEmptyList       = "List is empty"
 )
 
 // ErrBusiness is a business case error

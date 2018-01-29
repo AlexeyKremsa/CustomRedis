@@ -150,6 +150,30 @@ func Test_ListPop(t *testing.T) {
 	}
 }
 
+func Test_ListPop_EmptyList_GetErrEmptyList(t *testing.T) {
+	key := "key1"
+	initialArr := []string{}
+
+	strg.shards[0].keyValues[key] = item{value: initialArr}
+
+	val, err := strg.ListPop(key)
+	if err == nil {
+		t.Fatalf("Expected error: `%s` but got nil", errEmptyList)
+	}
+
+	if val != "" {
+		t.Fatalf("Expected to have an empty value, but got: %s", val)
+	}
+
+	if _, ok := err.(ErrBusiness); !ok {
+		t.Fatal("Unexpected error type")
+	}
+
+	if err.Error() != errEmptyList {
+		t.Fatalf("Expected error: `%s`, actual: `%s`", errEmptyList, err.Error())
+	}
+}
+
 func Test_ListPop_ListNotExists_ReturnEmptyString(t *testing.T) {
 	res, err := strg.ListPop("any")
 	if err != nil {

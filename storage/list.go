@@ -55,6 +55,10 @@ func (s *Storage) ListPop(key string) (string, error) {
 		}
 
 		if list, ok := item.value.([]string); ok {
+			if len(list) == 0 {
+				return "", newErrCustom(errEmptyList)
+			}
+
 			lastElem := list[len(list)-1]
 			item.value = list[:len(list)-1]
 			shard.keyValues[key] = item
