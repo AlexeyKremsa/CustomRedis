@@ -5,8 +5,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// CRConfig describes settings for CustomRedis
-type CRConfig struct {
+// Config describes settings for CustomRedis
+type Config struct {
 	Port              string `default:"8282"`
 	LogLevel          string `default:"debug"`
 	CleanupTimeoutSec int    `default:"60"`
@@ -14,10 +14,10 @@ type CRConfig struct {
 }
 
 // LoadConfig load configuration
-func LoadConfig() *CRConfig {
-	config := &CRConfig{}
-	m := multiconfig.NewWithPath("./config/config.toml")
-	log.Infof("Loading configuration...")
+func LoadConfig(path string) *Config {
+	config := &Config{}
+	m := multiconfig.NewWithPath(path)
+	log.Infof("Loading configuration from: %s", path)
 	err := m.Load(config)
 	if err != nil {
 		log.Fatalf("Failed to load configuration. %v", err)

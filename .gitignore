@@ -6,3 +6,5 @@ CustomRedis
 \.vscode/launch\.json
 
 storage/debug\.test
+
+cmd/httpclient/httpclient

@@ -1,6 +1,5 @@
 package storage
 
-// Not the best algorithm in the world, but for this case it`s enough
 // More info: http://www.cse.yorku.ca/~oz/hash.html
 // https://stackoverflow.com/questions/1579721/why-are-5381-and-33-so-important-in-the-djb2-algorithm
 func djb2(key string) uint64 {
@@ -13,6 +12,6 @@ func djb2(key string) uint64 {
 }
 
 func (s *Storage) getShard(key string) *shard {
-	shardID := djb2(key) & s.shardCountDecremented
+	shardID := djb2(key) & uint64(len(s.shards)-1)
 	return s.shards[shardID]
 }

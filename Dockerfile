@@ -1,6 +1,8 @@
-FROM scratch
+FROM golang:1.8
 
-COPY CustomRedis CustomRedis
-COPY config/config.toml config/config.toml
+ENV SRC_DIR=/go/src/github.com/AlexeyKremsa/CustomRedis
 
+WORKDIR $SRC_DIR
+COPY . $SRC_DIR
+RUN cd $SRC_DIR; go build
 CMD ["./CustomRedis"]

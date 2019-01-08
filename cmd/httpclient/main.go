@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"os"
 
+	"github.com/AlexeyKremsa/CustomRedis/api"
 	"github.com/AlexeyKremsa/CustomRedis/config"
 	"github.com/AlexeyKremsa/CustomRedis/storage"
 
@@ -16,13 +16,18 @@ type CustomRedis struct {
 }
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg := config.LoadConfig("../../config/config.toml")
 	setupLogger(cfg)
 	st := storage.Init(uint64(cfg.CleanupTimeoutSec), uint64(cfg.ShardCount))
 
-	cr := &CustomRedis{
-		Storage: st,
+	api.ServerStart(st, cfg)
+}
+
+func setupLogger(config *config.Config) {
+	log.SetOutput(os.Stdout)
+	lvl, err := log.ParseLevel(config.LogLevel)
+	if err != nil {
+		log.Fatalf("Failed to parse log level. %v", err)
 	}
-	router := NewRouter(cr)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), router))
+	log.SetLevel(lvl)
 }

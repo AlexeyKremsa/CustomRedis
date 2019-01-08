@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type item struct {
@@ -16,8 +16,7 @@ type item struct {
 // Storage describes storage settings and fields
 type Storage struct {
 	// pre-calculated value which is used to determine a shard
-	shardCountDecremented uint64
-	shards                []*shard
+	shards []*shard
 }
 
 type shard struct {
@@ -28,9 +27,9 @@ type shard struct {
 
 // Init creates Storage object
 func Init(cleanupTimeoutSec, shardCount uint64) *Storage {
-	strg := &Storage{shardCountDecremented: shardCount - 1}
-	strg.shards = make([]*shard, shardCount)
-	for i := 0; i < int(shardCount); i++ {
+	rand.Seed(time.Now().UTC().UnixNano())
+	strg := &Storage{shards: make([]*shard, shardCount)}
+	for i := 0; i < len(strg.shards); i++ {
 		strg.shards[i] = &shard{keyValues: make(map[string]item)}
 	}
 
@@ -51,24 +50,16 @@ func isExpired(expiration uint64) bool {
 }
 
 func (s *Storage) cleanup() {
-	var shardIndex int
-	if s.shardCountDecremented == 0 {
-		shardIndex = 0
-	} else {
-		seed := rand.NewSource(time.Now().UnixNano())
-		rnd := rand.New(seed)
-		shardIndex = rnd.Intn(int(s.shardCountDecremented))
-	}
-
-	shard := s.shards[shardIndex]
 	log.Debugf("Cleanup started")
 
-	shard.mutex.Lock()
-	defer shard.mutex.Unlock()
+	for _, shard := range s.shards {
+		shard.mutex.Lock()
+		defer shard.mutex.Unlock()
 
-	for key, val := range shard.keyValues {
-		if isExpired(val.expiration) {
-			delete(shard.keyValues, key)
+		for key, val := range shard.keyValues {
+			if isExpired(val.expiration) {
+				delete(shard.keyValues, key)
+			}
 		}
 	}
 }
