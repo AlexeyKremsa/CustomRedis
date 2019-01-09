@@ -10,11 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// CustomRedis describes whole API service
-type CustomRedis struct {
-	Storage *storage.Storage
-}
-
 func main() {
 	cfg := config.LoadConfig("../../config/config.toml")
 	setupLogger(cfg)
